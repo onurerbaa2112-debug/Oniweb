@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ONİWEB SOSYAL | Tarih Koşusu</title>
+    <style>
+        body { background: #451a03; color: white; font-family: 'Verdana', sans-serif; text-align: center; margin: 0; overflow: hidden; touch-action: manipulation; }
+        /* Canvas'ı mobil uyumlu yaptık */
+        canvas { background: #78350f; border-bottom: 8px solid #f59e0b; display: block; margin: 20px auto; box-shadow: 0 0 20px rgba(0,0,0,0.5); max-width: 100%; height: auto; }
+        .ui-layer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 15px; border: 2px solid #f59e0b; width: 85%; max-width: 320px; }
+        .btn { background: #f59e0b; color: #451a03; padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 18px; }
+        #score { font-size: 24px; margin-top: 10px; color: #fcd34d; }
+    </style>
+</head>
+<body>
+
+    <div id="score">Toplanan Eser: 0</div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+    <div id="menu" class="ui-layer">
+        <h1 id="title">ONİWEB SOSYAL</h1>
+        <p>Tarihi eserleri topla, engellere takılma!</p>
+        <button class="btn" onclick="startGame()" ontouchstart="startGame()">MACERAYA BAŞLA</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreElement = document.getElementById("score");
+        const menu = document.getElementById("menu");
+        const title = document.getElementById("title");
+
+        let score = 0;
+        let gameRunning = false;
+        
+        let player = { x: 50, y: 310, w: 45, h: 45, dy: 0, jumpForce: 13, gravity: 0.7, grounded: false };
+        let obstacle = { x: 850, y: 300, w: 40, h: 55, speed: 7.5 };
+
+        function drawPlayer() {
+            ctx.fillStyle = "#fcd34d"; // Altın sarısı hazine avcısı
+            ctx.fillRect(player.x, player.y, player.w, player.h);
+            // Şapka detayı
+            ctx.fillStyle = "#92400e";
+            ctx.fillRect(player.x - 5, player.y, player.w + 10, 10);
+        }
+
+        function drawObstacle() {
+            ctx.fillStyle = "#451a03"; // Koyu kahverengi kaya/dağ
+            ctx.beginPath();
+            ctx.moveTo(obstacle.x, obstacle.y + 55);
+            ctx.lineTo(obstacle.x + 20, obstacle.y);
+            ctx.lineTo(obstacle.x + 40, obstacle.y + 55);
+            ctx.fill();
+        }
+
+        function update() {
+            if (!gameRunning) return;
+
+            player.dy += player.gravity;
+            player.y += player.dy;
+
+            if (player.y > 310) {
+                player.y = 310;
+                player.dy = 0;
+                player.grounded = true;
+            }
+
+            obstacle.x -= obstacle.speed;
+            if (obstacle.x < -50) {
+                obstacle.x = 850 + Math.random() * 400;
+                score++;
+                scoreElement.innerText = "Toplanan Eser: " + score;
+                obstacle.speed += 0.2;
+            }
+
+            if (player.x < obstacle.x + obstacle.w - 10 &&
+                player.x + player.w > obstacle.x + 10 &&
+                player.y + player.h > obstacle.y) {
+                gameOver();
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = "rgba(255,255,255,0.2)";
+            ctx.setLineDash([20, 20]);
+            ctx.beginPath();
+            ctx.moveTo(0, 355);
+            ctx.lineTo(800, 355);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            drawPlayer();
+            drawObstacle();
+            requestAnimationFrame(update);
+        }
+
+        function startGame() {
+            if(gameRunning) return;
+            score = 0;
+            obstacle.speed = 7.5;
+            obstacle.x = 850;
+            player.y = 310;
+            gameRunning = true;
+            menu.style.display = "none";
+            scoreElement.innerText = "Toplanan Eser: 0";
+            update();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            menu.style.display = "block";
+            title.innerText = "TARİHİ KAYIP!";
+            document.querySelector(".btn").innerText = "KEŞFE YENİDEN BAŞLA";
+        }
+
+        // ZIPLAMA FONKSİYONU (Hem tuş hem dokunma için ortak)
+        function jump() {
+            if (player.grounded && gameRunning) {
+                player.dy = -player.jumpForce;
+                player.grounded = false;
+            }
+        }
+
+        // Klavye Kontrolü
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space") jump();
+        });
+
+        // Dokunmatik Kontrolü (Ekrana dokunulduğunda zıplar)
+        window.addEventListener("touchstart", (e) => {
+            if (gameRunning) {
+                jump();
+                // Sayfanın aşağı kaymasını engellemek için:
+                if (e.target === canvas) e.preventDefault();
+            }
+        }, { passive: false });
+
+    </script>
+</body>
+</html>

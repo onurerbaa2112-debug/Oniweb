@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONİWEB | Onur Yıldırım Yazılım & Eğitim Portalı</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">ONİ<span>WEB</span></div>
+        <ul class="nav-links">
+            <li><a href="index.html">Ana Sayfa</a></li>
+            <li class="dropdown">
+                <button class="dropbtn" onclick="toggleDersler()">Akıllı Notlar ▾</button>
+                <div id="dersListesi" class="dropdown-content">
+                    <a href="matematik.html">Matematik</a>
+                    <a href="sosyal.html">Sosyal Bilgiler</a>
+                    <a href="fen.html">Fen Bilimleri</a>
+                    <a href="turkce.html">Türkçe</a>
+                    <a href="din.html">Din Kültürü</a>
+                    <a href="ingilizce.html">İngilizce</a>
+                </div>
+            </li>
+            <li><a href="#">Yazılım</a></li>
+            <li><a href="#">Projelerim</a></li>
+        </ul>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>ONİWEB</h1>
+            <p>Geleceğin Yazılımcıları ve Öğrencileri İçin Tek Adres</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        
+        <div class="feature-card">
+            <span class="icon-box">📚</span>
+            <h3>Ders Notları</h3>
+            <p>5. Sınıf müfredatına uygun, sınav kazandıran en güncel özet notlar burada.</p>
+        </div>
+
+        <div class="feature-card">
+            <span class="icon-box">🎮</span>
+            <h3>Oyun Geliştirme</h3>
+            <p>Kendi dünyanı tasarlamak için gerekli araçları hemen indir:</p>
+            <div class="proje-dersleri">
+                <a href="https://unity.com/download" target="_blank" class="link-unity"># Unity Hub</a>
+                <a href="https://www.python.org/downloads/" target="_blank" class="link-python"># Python 3.12</a>
+                <a href="https://code.visualstudio.com/" target="_blank" class="link-vscode"># VS Code</a>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <span class="icon-box">🚀</span>
+            <h3>Oniweb Projesi</h3>
+            <p>Oynamak istediğin dersin üzerine tıkla ve maceraya başla:</p>
+            <div class="proje-dersleri">
+                <a href="matematik-oyun.html">Matematik</a>
+                <a href="fen-oyun.html">Fen Bilimleri</a>
+                <a href="sosyal-oyun.html">Sosyal Bilgiler</a>
+                <a href="turkce-oyun.html">Türkçe</a>
+                <a href="din-oyun.html">Din Kültürü</a>
+                <a href="ingilizce-oyun.html">İngilizce</a>
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <span class="icon-box">🤖</span>
+            <h3>Yapay Zeka Terminalleri</h3>
+            <p>Sistem çevrimiçi. Modunu seç ve bağlan:</p>
+            <div class="proje-dersleri">
+                <a href="oniweb.html" style="background: #00ffff; color: #000;">SESLİ ASİSTAN</a>
+                <a href="oniweb_os.html" style="background: #ffcc00; color: #000;">YAZMALI TERMİNAL</a>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 ONİWEB - Onur Yıldırım Projesidir.</p>
+    </footer>
+
+    <script>
+        function toggleDersler() {
+            document.getElementById("dersListesi").classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

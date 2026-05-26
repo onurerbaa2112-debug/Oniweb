@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ONİWEB İNGİLİZCE | English Run</title>
+    <style>
+        body { background: #2e1065; color: white; font-family: Arial; text-align: center; margin: 0; overflow: hidden; touch-action: manipulation; }
+        /* Canvas'ı mobil uyumlu yaptım */
+        canvas { background: #4c1d95; border-bottom: 5px solid #a78bfa; display: block; margin: 20px auto; max-width: 100%; height: auto; }
+        .ui-layer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 15px; width: 80%; max-width: 300px; }
+        .btn { background: #a78bfa; color: white; padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div id="score" style="font-size:24px; margin-top:10px;">Score: 0</div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div id="menu" class="ui-layer">
+        <h1>ONİWEB ENGLISH</h1>
+        <p>Jump over the obstacles!</p>
+        <button class="btn" onclick="startGame()" ontouchstart="startGame()">START GAME</button>
+    </div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const menu = document.getElementById("menu");
+        let score = 0, gameRunning = false;
+        let player = { x: 50, y: 310, w: 40, h: 40, dy: 0, jumpForce: 12, gravity: 0.6, grounded: false };
+        let obstacle = { x: 850, y: 310, w: 30, h: 50, speed: 7.5 };
+
+        function update() {
+            if (!gameRunning) return;
+            player.dy += player.gravity; player.y += player.dy;
+            if (player.y > 310) { player.y = 310; player.dy = 0; player.grounded = true; }
+            obstacle.x -= obstacle.speed;
+            if (obstacle.x < -30) { obstacle.x = 850; score++; document.getElementById("score").innerText = "Score: " + score; }
+            if (player.x < obstacle.x + 30 && player.x + 40 > obstacle.x && player.y + 40 > obstacle.y) { gameRunning = false; menu.style.display="block"; }
+            ctx.clearRect(0, 0, 800, 400);
+            ctx.fillStyle = "#ddd6fe"; ctx.fillRect(player.x, player.y, 40, 40);
+            ctx.fillStyle = "#c4b5fd"; ctx.fillRect(obstacle.x, obstacle.y, 30, 50);
+            requestAnimationFrame(update);
+        }
+
+        function startGame() { 
+            if(gameRunning) return;
+            score = 0; 
+            document.getElementById("score").innerText = "Score: 0";
+            obstacle.x = 850; 
+            gameRunning = true; 
+            menu.style.display = "none"; 
+            update(); 
+        }
+
+        // ZIPLAMA FONKSİYONU
+        function jump() {
+            if (player.grounded && gameRunning) {
+                player.dy = -12;
+                player.grounded = false;
+            }
+        }
+
+        // KLAVYE KONTROLÜ
+        window.addEventListener("keydown", (e) => { 
+            if (e.code === "Space") jump(); 
+        });
+
+        // DOKUNMATİK KONTROLÜ (Babanın telefonu için)
+        window.addEventListener("touchstart", (e) => {
+            // Eğer oyun başlamışsa zıpla
+            if (gameRunning) {
+                jump();
+                e.preventDefault(); 
+            }
+        }, { passive: false });
+
+    </script>
+</body>
+</html>

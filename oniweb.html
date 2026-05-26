@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>ONİWEB OS | V44 FULL</title>
+    <style>
+        body { background: #000; color: #00ffff; font-family: 'Courier New', monospace; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; margin: 0; }
+        .core { width: 200px; height: 200px; border: 3px solid #00ffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px #00ffff; }
+        #status { margin-top: 30px; font-size: 1.2rem; text-transform: uppercase; text-align: center; max-width: 80%; }
+    </style>
+</head>
+<body>
+    <div class="core" id="core">ONİWEB</div>
+    <div id="status">BAŞLAMAK İÇİN EKRANA TIKLA</div>
+
+    <script>
+        const status = document.getElementById('status');
+        const synth = window.speechSynthesis;
+        let isStarted = false;
+        const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        rec.lang = 'tr-TR';
+        rec.continuous = true;
+
+        function speak(text) {
+            rec.stop();
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'tr-TR';
+            msg.onend = () => { if(isStarted) rec.start(); status.innerText = "DİNLENİYOR..."; };
+            synth.speak(msg);
+        }
+
+        document.body.addEventListener('click', () => {
+            if(!isStarted) {
+                isStarted = true;
+                status.innerText = "SİSTEM AKTİF...";
+                rec.start();
+                speak("Sistem çevrimiçi kanka.");
+            }
+        });
+
+        rec.onresult = (e) => {
+            const cmd = e.results[e.results.length - 1][0].transcript.toLowerCase();
+            status.innerText = "KOMUT: " + cmd;
+
+            // 1. TÜRKÇE ÇEVİRİ (Google Çeviri Modu)
+            if (cmd.includes("türkçesi nedir")) {
+                let kelime = cmd.replace("türkçesi nedir", "").trim();
+                status.innerText = "ÇEVRİLİYOR: " + kelime;
+                // Google Çeviri API'si kullanarak çeviriyi alıyoruz
+                fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=tr&dt=t&q=${encodeURIComponent(kelime)}`)
+                .then(res => res.json())
+                .then(data => {
+                    let sonuc = data[0][0][0];
+                    speak(kelime + " kelimesinin Türkçesi " + sonuc + " kanka.");
+                });
+            }
+            // 2. WIKIPEDIA (BİLGİ)
+            else if (cmd.includes("kimdir") || cmd.includes("nedir")) {
+                let konu = cmd.replace("kimdir", "").replace("nedir", "").trim();
+                fetch('https://tr.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(konu))
+                .then(res => res.json())
+                .then(data => data.extract ? speak(data.extract) : speak("Araştırmalarım sonucunda bir yere varamadım kanka."));
+            }
+            // 3. MÜZİK
+            else if (cmd.includes("aç")) {
+                window.open("https://music.youtube.com/search?q=" + encodeURIComponent(cmd.replace("aç", "").trim()), "_blank");
+                speak("Açıyorum kanka.");
+            } else {
+                speak("Anlayamadım kanka, bir daha söyler misin?");
+            }
+        };
+        rec.onerror = () => { if(isStarted) rec.start(); };
+    </script>
+</body>
+</html>

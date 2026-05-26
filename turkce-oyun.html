@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ONİWEB TÜRKÇE | Kitap Koşusu</title>
+    <style>
+        body { background: #450a0a; color: white; font-family: Arial; text-align: center; margin: 0; overflow: hidden; touch-action: manipulation; }
+        /* Canvas'ı mobil uyumlu yaptık */
+        canvas { background: #7f1d1d; border-bottom: 5px solid white; display: block; margin: 20px auto; max-width: 100%; height: auto; }
+        .ui-layer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; border-radius: 15px; width: 80%; max-width: 300px; }
+        .btn { background: white; color: #7f1d1d; padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div id="score" style="font-size:24px; margin-top:10px;">Okunan Sayfa: 0</div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div id="menu" class="ui-layer">
+        <h1>ONİWEB TÜRKÇE</h1>
+        <p>Kitapların üzerinden atla!</p>
+        <button class="btn" onclick="startGame()" ontouchstart="startGame()">OKUMAYA BAŞLA</button>
+    </div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const menu = document.getElementById("menu");
+        let score = 0, gameRunning = false;
+        let player = { x: 50, y: 310, w: 40, h: 40, dy: 0, jumpForce: 12, gravity: 0.6, grounded: false };
+        let obstacle = { x: 850, y: 310, w: 40, h: 40, speed: 8 };
+
+        function update() {
+            if (!gameRunning) return;
+            player.dy += player.gravity; player.y += player.dy;
+            if (player.y > 310) { player.y = 310; player.dy = 0; player.grounded = true; }
+            obstacle.x -= obstacle.speed;
+            if (obstacle.x < -40) { obstacle.x = 850; score++; document.getElementById("score").innerText = "Okunan Sayfa: " + score; }
+            if (player.x < obstacle.x + 40 && player.x + 40 > obstacle.x && player.y + 40 > obstacle.y) { 
+                gameRunning = false; 
+                menu.style.display="block"; 
+            }
+            ctx.clearRect(0, 0, 800, 400);
+            ctx.fillStyle = "white"; ctx.fillRect(player.x, player.y, 40, 40); // Karakter
+            ctx.fillStyle = "#fecaca"; ctx.fillRect(obstacle.x, obstacle.y, 40, 40); // Engel (Kitap)
+            requestAnimationFrame(update);
+        }
+
+        function startGame() { 
+            if(gameRunning) return;
+            score = 0; 
+            document.getElementById("score").innerText = "Okunan Sayfa: 0";
+            obstacle.x = 850; 
+            gameRunning = true; 
+            menu.style.display = "none"; 
+            update(); 
+        }
+
+        // Zıplama komutu
+        function jump() {
+            if (player.grounded && gameRunning) {
+                player.dy = -12;
+                player.grounded = false;
+            }
+        }
+
+        // Klavye desteği
+        window.addEventListener("keydown", (e) => { 
+            if (e.code === "Space") jump(); 
+        });
+
+        // Dokunmatik desteği (Babanın telefonu için asıl bomba burası)
+        window.addEventListener("touchstart", (e) => {
+            if (gameRunning) {
+                jump();
+                e.preventDefault(); 
+            }
+        }, { passive: false });
+
+    </script>
+</body>
+</html>

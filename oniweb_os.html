@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>ONİWEB OS | NEURAL TERMINAL</title>
+    <style>
+        :root { --glow: #00ff41; --accent: #ffcc00; --bg: #050505; }
+        
+        body { 
+            background: var(--bg); color: var(--accent); 
+            font-family: 'Consolas', monospace; height: 100vh; margin: 0; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+        }
+
+        /* Ana Panel */
+        .terminal-box {
+            width: 90%; max-width: 800px; height: 500px;
+            background: rgba(0, 0, 0, 0.8); border: 2px solid var(--accent);
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.1);
+            display: flex; flex-direction: column; border-radius: 10px; position: relative;
+        }
+
+        /* Hareketli Çizgiler Arka Planı */
+        .terminal-box::before {
+            content: "SYSTEM ONLINE - ONIWEB v17.0"; position: absolute; top: -25px; left: 10px;
+            font-size: 0.8rem; color: var(--accent); letter-spacing: 2px;
+        }
+
+        /* Çıktı Ekranı */
+        #output-screen {
+            flex: 1; padding: 20px; overflow-y: auto; color: #fff;
+            font-size: 1.1rem; line-height: 1.5; border-bottom: 1px solid #333;
+        }
+
+        /* Giriş Alanı */
+        .input-area { display: flex; padding: 15px; background: #111; border-radius: 0 0 10px 10px; }
+        
+        #user-input {
+            background: transparent; border: none; color: var(--glow);
+            width: 100%; font-size: 1.2rem; outline: none; font-family: inherit;
+        }
+
+        .cursor { animation: blink 1s infinite; color: var(--glow); margin-right: 10px; }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Görsel Efekt: Çekirdek */
+        .mini-core {
+            position: absolute; top: 10px; right: 10px; width: 40px; height: 40px;
+            border: 2px solid var(--accent); border-radius: 50%; animation: spin 4s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="terminal-box">
+        <div class="mini-core"></div>
+        <div id="output-screen">ONIWEB Çekirdek Bağlantısı Kuruldu...<br>Komutunuzu bekliyorum Onur.</div>
+        
+        <div class="input-area">
+            <span class="cursor">></span>
+            <input type="text" id="user-input" placeholder="Sorguyu buraya yazın..." autofocus autocomplete="off">
+        </div>
+    </div>
+
+    <script>
+        const output = document.getElementById('output-screen');
+        const input = document.getElementById('user-input');
+        const synth = window.speechSynthesis;
+
+        // --- BURASI SENİN ÖZEL VERİ TABANIN ---
+        const ozelBilgiler = {
+            "atatürk": "Mustafa Kemal Atatürk, 1881 yılında Selanik'te doğdu. Türk asker, devlet adamı ve Türkiye Cumhuriyeti'nin kurucusudur. Hayatı boyunca Türk milletinin bağımsızlığı ve çağdaşlaşması için mücadele etmiştir. 10 Kasım 1938'de hayata gözlerini yummuştur.",
+            "oniweb": "Oniweb, Onur Yıldırım tarafından geliştirilen, internet tabanlı bir yapay zeka arayüzüdür.",
+            "erbaa": "Erbaa, Tokat'ın en büyük ve en gelişmiş ilçesidir. Yeşilırmak havzasında bulunur."
+        };
+
+        function speak(text) {
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'tr-TR';
+            utter.pitch = 0.85;
+            utter.rate = 1.05;
+            synth.speak(utter);
+        }
+
+        async function arastir(sorgu) {
+            output.innerHTML += `<br><span style="color:var(--accent)">[SİSTEM]:</span> "${sorgu}" araştırılıyor...`;
+            
+            // 1. Önce özel verilere bak
+            for (let anahtar in ozelBilgiler) {
+                if (sorgu.toLowerCase().includes(anahtar)) {
+                    return ozelBilgiler[anahtar];
+                }
+            }
+
+            // 2. Hava durumu kontrolü
+            if (sorgu.toLowerCase().includes("hava")) {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=40.66&longitude=36.57&current_weather=true');
+                const d = await res.json();
+                return `Erbaa için güncel sıcaklık ${Math.round(d.current_weather.temperature)} derecedir.`;
+            }
+
+            // 3. Genel Bilgi (Wikipedia API)
+            try {
+                const res = await fetch(`https://tr.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(sorgu)}`);
+                const data = await res.json();
+                return data.extract || "Bu konuda internet veri tabanında özet bir bilgi bulunamadı.";
+            } catch (e) {
+                return "Bağlantı hatası: Bilgiye şu an ulaşılamıyor.";
+            }
+        }
+
+        input.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                const query = input.value;
+                input.value = '';
+                
+                output.innerHTML += `<br><br><span style="color:var(--glow)">> ONUR:</span> ${query}`;
+                
+                const cevap = await arastir(query);
+                
+                output.innerHTML += `<br><span style="color:var(--accent)">> ONİWEB:</span> ${cevap}`;
+                output.scrollTop = output.scrollHeight; // Ekranı aşağı kaydır
+                
+                speak(cevap);
+            }
+        });
+    </script>
+</body>
+</html>

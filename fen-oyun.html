@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ONİWEB FEN | Gezegen Atlatma</title>
+    <style>
+        body { background: #020617; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin: 0; overflow: hidden; touch-action: manipulation; }
+        /* Canvas'ı mobil uyumlu yaptık */
+        canvas { background: radial-gradient(circle, #1e293b 0%, #020617 100%); border-bottom: 5px solid #4ade80; display: block; margin: 20px auto; max-width: 100%; height: auto; }
+        .ui-layer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 350px; background: rgba(2, 6, 23, 0.9); padding: 20px; border-radius: 15px; border: 1px solid #4ade80; }
+        .btn { background: #4ade80; color: #0f172a; padding: 15px 30px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 20px; transition: 0.3s; }
+        .btn:hover { transform: scale(1.1); background: #22c55e; }
+        #score { font-size: 24px; margin-top: 10px; color: #4ade80; }
+    </style>
+</head>
+<body>
+
+    <div id="score">Uzay Yolu: 0 KM</div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+    <div id="menu" class="ui-layer">
+        <h1 id="title">ONİWEB FEN</h1>
+        <p>Gezegenlere çarpmadan ilerle!</p>
+        <button class="btn" onclick="startGame()" ontouchstart="startGame()">KEŞFE BAŞLA</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreElement = document.getElementById("score");
+        const menu = document.getElementById("menu");
+        const title = document.getElementById("title");
+
+        let score = 0;
+        let gameRunning = false;
+        
+        let player = { x: 80, y: 310, w: 40, h: 40, dy: 0, jumpForce: 13, gravity: 0.7, grounded: false };
+        let obstacle = { x: 850, y: 310, r: 20, speed: 8 };
+
+        function drawPlayer() {
+            ctx.fillStyle = "#38bdf8"; 
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#38bdf8";
+            ctx.fillRect(player.x, player.y, player.w, player.h);
+            ctx.shadowBlur = 0;
+        }
+
+        function drawObstacle() {
+            ctx.beginPath();
+            ctx.arc(obstacle.x, obstacle.y + 20, obstacle.r, 0, Math.PI * 2);
+            ctx.fillStyle = "#fb923c"; 
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = "#fb923c";
+            ctx.fill();
+            ctx.closePath();
+            ctx.shadowBlur = 0;
+        }
+
+        function update() {
+            if (!gameRunning) return;
+
+            player.dy += player.gravity;
+            player.y += player.dy;
+
+            if (player.y > 310) {
+                player.y = 310;
+                player.dy = 0;
+                player.grounded = true;
+            }
+
+            obstacle.x -= obstacle.speed;
+            if (obstacle.x < -50) {
+                obstacle.x = 900 + Math.random() * 300;
+                score += 10;
+                scoreElement.innerText = "Uzay Yolu: " + score + " KM";
+                obstacle.speed += 0.25;
+            }
+
+            let dx = player.x + 20 - obstacle.x;
+            let dy = player.y + 20 - (obstacle.y + 20);
+            let distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 35) {
+                gameOver();
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "white";
+            for(let i=0; i<10; i++) {
+                ctx.fillRect(Math.random()*800, Math.random()*400, 2, 2);
+            }
+
+            drawPlayer();
+            drawObstacle();
+            requestAnimationFrame(update);
+        }
+
+        function startGame() {
+            if(gameRunning) return;
+            score = 0;
+            obstacle.speed = 8;
+            obstacle.x = 900;
+            player.y = 310;
+            gameRunning = true;
+            menu.style.display = "none";
+            scoreElement.innerText = "Uzay Yolu: 0 KM";
+            update();
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            menu.style.display = "block";
+            title.innerText = "GÖREV BAŞARISIZ!";
+            document.querySelector(".btn").innerText = "ÜSSE DÖN VE TEKRAR DENE";
+        }
+
+        // ZIPLAMA FONKSİYONU
+        function jump() {
+            if (player.grounded && gameRunning) {
+                player.dy = -player.jumpForce;
+                player.grounded = false;
+            }
+        }
+
+        // Klavye Kontrolü
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space") jump();
+        });
+
+        // Dokunmatik Kontrolü (Babanın telefonu için)
+        window.addEventListener("touchstart", (e) => {
+            if (gameRunning) {
+                jump();
+                if (e.target === canvas) e.preventDefault();
+            }
+        }, { passive: false });
+
+    </script>
+</body>
+</html>
